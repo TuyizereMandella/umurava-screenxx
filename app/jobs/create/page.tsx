@@ -79,7 +79,7 @@ export default function CreateJob() {
   const handlePublish = async () => {
     try {
       setIsLoading(true);
-      await api.post('/jobs', { ...jobData, is_public: true });
+      await api.post('/jobs', { ...jobData, is_public: true, ai_baseline: aiBaseline });
       dispatch(fetchJobs());
       router.push('/jobs');
     } catch (error) {
@@ -97,7 +97,7 @@ export default function CreateJob() {
         return;
       }
       setIsLoading(true);
-      await api.post('/jobs', { ...jobData, is_public: false });
+      await api.post('/jobs', { ...jobData, is_public: false, ai_baseline: aiBaseline });
       dispatch(fetchJobs());
       router.push('/jobs');
     } catch (error) {
