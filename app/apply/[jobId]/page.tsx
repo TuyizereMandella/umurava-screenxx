@@ -8,45 +8,28 @@ import { useParams } from 'next/navigation';
 import { api } from '@/lib/api';
 import { Job } from '@/store/slices/jobsSlice';
 
-const jobData = {
-  id: '1',
-  title: 'Senior ML Systems Engineer',
-  company: 'Nexus Intelligence',
-  department: 'Core Research',
-  location: 'Remote · London',
-  type: 'Full-Time',
-  salary: '$180k – $240k / year',
-  posted: '3 days ago',
-  logo: 'NI',
-  logoGradient: 'from-blue-600 to-indigo-700',
-  description: `We're building the evaluation infrastructure for frontier AI models. As a Senior ML Systems Engineer, you'll architect the core systems that allow us to understand model behavior at scale and speed.`,
-  responsibilities: [
-    'Design and implement high-throughput model evaluation pipelines',
-    'Develop metrics for assessing LLM reasoning, safety, and reliability',
-    'Optimize distributed training and inference workloads on GPU clusters',
-    'Mentor junior engineers and set ML engineering standards',
-  ],
+const FALLBACK_JOB = {
+  company: 'Umurava Intelligence',
+  perks: ['Remote First', 'Equity Package', 'Unlimited PTO', 'Health & Dental', 'Learning Budget'],
   requirements: [
-    '5+ years of hands-on ML/AI engineering experience',
-    'Expertise in PyTorch, JAX, or TensorFlow at production scale',
-    'Strong background in distributed systems and GPU optimization',
-    'Proven track record building and shipping ML infrastructure',
+    'Proven experience in the relevant field.',
+    'Strong problem-solving and communication skills.',
+    'Ability to work independently and collaboratively in a fast-paced environment.',
   ],
   aiQuestions: [
     {
       id: 'q1',
-      question: 'Describe a production ML system you built from scratch. What were the biggest technical challenges and how did you solve them?',
-      hint: 'Focus on scale, reliability, and key lessons learned.',
+      question: 'Describe a complex problem you solved in a previous role. What was your approach?',
+      hint: 'Focus on scale, methodology, and key lessons learned.',
       required: true,
     },
     {
       id: 'q2',
-      question: 'How would you approach fine-tuning a large language model for a domain-specific task with limited labeled data?',
-      hint: 'Consider data augmentation, few-shot learning, or RLHF techniques.',
+      question: 'How do you prioritize competing deadlines in a high-pressure environment?',
+      hint: 'Consider specific frameworks or strategies you use.',
       required: true,
     },
-  ],
-  perks: ['Remote First', 'Equity Package', 'Unlimited PTO', 'GPU Credits', 'Health & Dental', '$5k Learning Budget'],
+  ]
 };
 
 type Step = 'info' | 'cv' | 'questions' | 'review';
@@ -55,7 +38,7 @@ const STEP_LABELS = ['Your Info', 'Upload CV', 'AI Questions', 'Review'];
 
 export default function ApplyPage() {
   const { jobId } = useParams();
-  const [job, setJob] = useState<Job | null>(null);
+  const [job, setJob] = useState<any | null>(null);
   const [step, setStep] = useState<Step>('info');
   const [submitted, setSubmitted] = useState(false);
   const [dragActive, setDragActive] = useState(false);
@@ -66,7 +49,7 @@ export default function ApplyPage() {
   useEffect(() => {
     const fetchJob = async () => {
       try {
-        const response = await api.get(`/jobs/${jobId}`);
+        const response = await api.get(`/jobs/public/${jobId}`);
         setJob(response.data.data.job);
       } catch (err) {
         console.error('Failed to fetch job details:', err);
@@ -133,7 +116,7 @@ export default function ApplyPage() {
             You're in the pipeline, <span className="font-semibold text-[#111827]">{formData.firstName || 'Candidate'}</span>.
           </p>
           <p className="text-[#9CA3AF] text-sm mb-10 leading-relaxed">
-            Our AI is reviewing your profile. The <strong className="text-[#111827]">{jobData.company}</strong> team will get back to you within 48–72 hours.
+            Our AI is reviewing your profile. The <strong className="text-[#111827]">{job?.organizations?.name || FALLBACK_JOB.company}</strong> team will get back to you within 48–72 hours.
           </p>
           <div className="bg-white border border-[#E4E8EF] rounded-2xl p-6 text-left mb-8 shadow-sm">
             <p className="text-xs font-bold text-[#9CA3AF] uppercase tracking-widest mb-4">What happens next</p>
@@ -174,16 +157,16 @@ export default function ApplyPage() {
         <div className="lg:col-span-2 space-y-5">
           <div className="bg-white border border-[#E4E8EF] rounded-2xl p-6 shadow-sm">
             <div className={`w-14 h-14 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-700 flex items-center justify-center font-bold text-white text-base shadow-lg mb-5`}>
-              {job?.title.charAt(0) || 'J'}
+              {job?.organizations?.name ? job.organizations.name.charAt(0) : 'U'}
             </div>
             <h1 className="text-xl font-bold text-[#111827] mb-1">{job?.title || 'Loading...'}</h1>
-            <p className="text-[#2563EB] font-semibold text-sm mb-5">Umurava Recruitment</p>
+            <p className="text-[#2563EB] font-semibold text-sm mb-5">{job?.organizations?.name || FALLBACK_JOB.company}</p>
 
             <div className="space-y-2.5 mb-5">
               {[
                 { icon: MapPin, label: job?.location || 'Remote' },
                 { icon: Briefcase, label: `Full-Time · ${job?.department || 'Engineering'}` },
-                { icon: Star, label: '$120k - $160k' },
+                { icon: Star, label: job?.ai_baseline?.market_intelligence?.avg_salary || 'Competitive Salary' },
               ].map(({ icon: Icon, label }) => (
                 <div key={label} className="flex items-center gap-2 text-sm text-[#6B7280]">
                   <Icon className="w-4 h-4 text-[#9CA3AF] shrink-0" />
@@ -193,14 +176,14 @@ export default function ApplyPage() {
             </div>
 
             <p className="text-sm text-[#6B7280] leading-relaxed border-t border-[#E4E8EF] pt-5">
-              {jobData.description}
+              {job?.description || 'No description provided.'}
             </p>
           </div>
 
           <div className="bg-white border border-[#E4E8EF] rounded-2xl p-6 shadow-sm">
             <p className="text-xs font-bold text-[#9CA3AF] uppercase tracking-widest mb-4">Benefits & Perks</p>
             <div className="flex flex-wrap gap-2">
-              {jobData.perks.map(perk => (
+              {FALLBACK_JOB.perks.map(perk => (
                 <span key={perk} className="px-3 py-1.5 bg-[#EFF6FF] border border-blue-100 text-[#2563EB] text-xs font-medium rounded-full">
                   {perk}
                 </span>
@@ -211,7 +194,7 @@ export default function ApplyPage() {
           <div className="bg-white border border-[#E4E8EF] rounded-2xl p-6 shadow-sm">
             <p className="text-xs font-bold text-[#9CA3AF] uppercase tracking-widest mb-4">Requirements</p>
             <ul className="space-y-2.5">
-              {jobData.requirements.map((req, i) => (
+              {(job?.ai_baseline?.requirements || FALLBACK_JOB.requirements).map((req: string, i: number) => (
                 <li key={i} className="flex items-start gap-2.5 text-sm text-[#6B7280]">
                   <div className="w-1.5 h-1.5 rounded-full bg-[#2563EB] mt-2 shrink-0" />
                   <span>{req}</span>
@@ -362,7 +345,7 @@ export default function ApplyPage() {
                   <p className="text-[#6B7280] text-sm">These questions were crafted by AI specifically for this role. Take your time.</p>
                 </div>
 
-                {jobData.aiQuestions.map((q, i) => (
+                {(job?.ai_baseline?.ai_questions || FALLBACK_JOB.aiQuestions).map((q: any, i: number) => (
                   <div key={q.id} className="space-y-3">
                     <div className="flex items-start gap-3">
                       <span className="w-7 h-7 rounded-full bg-[#111827] text-white text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">
@@ -415,7 +398,7 @@ export default function ApplyPage() {
 
                 <div className="bg-[#F5F7FA] border border-[#E4E8EF] rounded-xl p-5">
                   <p className="text-xs font-bold text-[#9CA3AF] uppercase tracking-widest mb-3">AI Answers Preview</p>
-                  {jobData.aiQuestions.map((q, i) => (
+                  {(job?.ai_baseline?.ai_questions || FALLBACK_JOB.aiQuestions).map((q: any, i: number) => (
                     <div key={q.id} className="mb-4 last:mb-0">
                       <p className="text-xs text-[#9CA3AF] mb-1">Q{i + 1}: {q.question.slice(0, 60)}…</p>
                       <p className="text-sm text-[#374151] leading-relaxed line-clamp-2">{formData.answers[q.id] || <span className="italic text-red-400">Not answered</span>}</p>
@@ -426,7 +409,7 @@ export default function ApplyPage() {
                 <div className="bg-amber-50 border border-amber-100 rounded-xl p-4 flex items-start gap-3">
                   <AlertCircle className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
                   <p className="text-xs text-amber-700 leading-relaxed">
-                    By submitting, you agree that your information will be processed by ScreenerX AI and shared with <strong className="text-[#111827]">{jobData.company}</strong> for recruitment purposes.
+                    By submitting, you agree that your information will be processed by ScreenerX AI and shared with <strong className="text-[#111827]">{job?.organizations?.name || FALLBACK_JOB.company}</strong> for recruitment purposes.
                   </p>
                 </div>
               </div>

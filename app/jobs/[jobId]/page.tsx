@@ -1,6 +1,6 @@
 'use client';
-import { useParams } from 'next/navigation';
-import { ArrowLeft, Users, CheckCircle, Clock, Settings, MapPin, Briefcase, Sparkles, CheckCircle2 } from 'lucide-react';
+import { useParams, useRouter } from 'next/navigation';
+import { ArrowLeft, Users, CheckCircle, Clock, Settings, MapPin, Briefcase, Sparkles, CheckCircle2, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { api } from '../../../lib/api';
@@ -10,8 +10,10 @@ import { RootState } from '../../../store/store';
 export default function JobDetailsPage() {
   const params = useParams();
   const jobId = params.jobId as string;
+  const router = useRouter();
   const [job, setJob] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [isDeleting, setIsDeleting] = useState(false);
   const { list: allApplicants } = useSelector((state: RootState) => state.applicants);
 
   useEffect(() => {
@@ -27,6 +29,20 @@ export default function JobDetailsPage() {
     };
     fetchJob();
   }, [jobId]);
+
+  const handleDelete = async () => {
+    if (!confirm('Are you sure you want to delete this job? This action cannot be undone.')) return;
+    
+    setIsDeleting(true);
+    try {
+      await api.delete(`/jobs/${jobId}`);
+      router.push('/jobs');
+    } catch (error) {
+      console.error('Failed to delete job:', error);
+      alert('Failed to delete job. Please try again.');
+      setIsDeleting(false);
+    }
+  };
 
   if (loading || !job) {
     return (
@@ -61,7 +77,16 @@ export default function JobDetailsPage() {
             <p className="text-xs text-gray-500 mt-0.5">{job.department} • {job.location}</p>
           </div>
         </div>
-        <div className="flex space-x-3">
+        <div className="flex space-x-3 items-center">
+          <button 
+            onClick={handleDelete}
+            disabled={isDeleting}
+            className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
+            title="Delete Job"
+          >
+            <Trash2 className="w-5 h-5" />
+          </button>
+          <div className="w-px h-6 bg-gray-200 mx-1"></div>
           <Link href={`/jobs/${jobId}/settings`} className="px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 shadow-sm flex items-center">
              <Settings className="w-4 h-4 mr-2" /> Settings
           </Link>
