@@ -40,8 +40,8 @@ export default function AuditLogPage() {
           <ArrowLeft className="w-5 h-5" />
         </Link>
         <div>
-          <h1 className="text-3xl font-bold text-[#0B1B42]">Full Audit Log</h1>
-          <p className="text-gray-500 mt-2">Comprehensive trail of AI decisions and system activities.</p>
+          <h1 className="text-3xl font-bold text-[#0B1B42]">AI Activity Log</h1>
+          <p className="text-gray-500 mt-2">Comprehensive trail of AI decisions and automated recruitment events.</p>
         </div>
       </div>
 

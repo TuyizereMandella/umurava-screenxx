@@ -15,7 +15,7 @@ export interface Applicant {
   status: string;
   match_score: number | null;
   applied_at: string;
-  jobs?: { title: string; organization_id?: string; department?: string };
+  jobs?: { title: string; organization_id?: string; department?: string; shortlist_threshold?: number };
   ai_analysis?: any[];
 }
 

@@ -11,7 +11,7 @@ const navItems = [
   { name: 'Shortlist', href: '/shortlist', icon: ClipboardCheck },
   { name: 'Calendar', href: '/calendar', icon: CalendarIcon },
   { name: 'Communications', href: '/emails', icon: Mail },
-  { name: 'Audit Logs', href: '/audit', icon: Shield },
+  { name: 'AI Activity', href: '/audit', icon: Shield },
 ];
 
 import { useDispatch } from 'react-redux';

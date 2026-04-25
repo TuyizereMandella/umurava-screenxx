@@ -27,9 +27,9 @@ export default function ApplicantsPoolPage() {
           <p className="text-gray-500 mt-2">Manage and evaluate all applicants across your active positions.</p>
         </div>
         <div className="flex space-x-3">
-          <Link href="/applicants/import" className="flex items-center px-4 py-2.5 bg-[#0B1B42] text-white rounded-lg text-sm font-medium hover:bg-blue-900 transition-colors shadow-sm">
+          <Link href="/applicants/ingest" className="flex items-center px-4 py-2.5 bg-[#0B1B42] text-white rounded-lg text-sm font-medium hover:bg-blue-900 transition-colors shadow-sm">
             <UserPlus className="w-4 h-4 mr-2" />
-            AI Batch Import
+            Import Candidates
           </Link>
         </div>
       </div>
@@ -102,7 +102,7 @@ export default function ApplicantsPoolPage() {
                     <td className="p-4">
                       <span className={clsx(
                         "font-bold text-sm",
-                        app.match_score && app.match_score >= 90 ? "text-green-600" : app.match_score && app.match_score >= 70 ? "text-blue-600" : "text-gray-500"
+                        app.match_score && app.jobs?.shortlist_threshold && app.match_score >= app.jobs.shortlist_threshold + 15 ? "text-green-600" : app.match_score && app.jobs?.shortlist_threshold && app.match_score >= app.jobs.shortlist_threshold ? "text-blue-600" : "text-gray-500"
                       )}>
                         {app.match_score ? `${app.match_score}%` : 'Pending'}
                       </span>

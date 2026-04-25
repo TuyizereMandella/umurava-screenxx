@@ -207,13 +207,13 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Recent Activity */}
+        {/* AI Recent Activity */}
         <div className="space-y-4">
-          <h2 className="text-xl font-bold text-[#0B1B42]">Recent Activity</h2>
+          <h2 className="text-xl font-bold text-[#0B1B42]">AI Recent Activity</h2>
           <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm divide-y divide-gray-50">
             {auditLogs.length === 0 ? (
               <div className="py-8 text-center text-gray-400 text-xs italic">
-                No recent activity recorded.
+                No AI activity recorded yet.
               </div>
             ) : (
               auditLogs.slice(0, 5).map((log) => {
@@ -232,7 +232,7 @@ export default function Dashboard() {
               })
             )}
             <div className="mt-6 pt-4 text-center">
-              <Link href="/audit" className="text-xs font-bold text-[#0B1B42] uppercase tracking-widest hover:underline">Full Activity Log</Link>
+              <Link href="/audit" className="text-xs font-bold text-[#0B1B42] uppercase tracking-widest hover:underline">AI Activity Log</Link>
             </div>
           </div>
 

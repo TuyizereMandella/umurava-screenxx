@@ -42,40 +42,28 @@ export default function IngestApplicants() {
       name: file.name,
       progress: 0,
       status: 'Processing',
-      candidates: 1, // Currently parsing 1 candidate per file
+      candidates: 1,
       startTime: new Date()
     };
 
     setActiveUploads(prev => [newUpload, ...prev]);
 
     try {
-      // 1. Upload to Supabase Storage via our backend
       const formData = new FormData();
+      formData.append('jobId', selectedJobId);
       formData.append('resume', file);
       
-      setActiveUploads(prev => prev.map(u => u.id === newUpload.id ? { ...u, progress: 40 } : u));
+      setActiveUploads(prev => prev.map(u => u.id === newUpload.id ? { ...u, progress: 30 } : u));
       
-      const uploadResponse = await api.post('/upload/resume', formData, {
+      // Use the new automated endpoint that handles Parsing + Creation + Analysis
+      const response = await api.post('/applicants/import', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
       
-      const resumeUrl = uploadResponse.data.data.resumeUrl;
-      setActiveUploads(prev => prev.map(u => u.id === newUpload.id ? { ...u, progress: 80 } : u));
-      
-      // 2. Ingest Applicant
-      await api.post('/applicants/ingest', {
-        jobId: selectedJobId,
-        name: file.name.replace(/\.[^/.]+$/, ""), // Use filename without extension as fallback name
-        email: `${file.name.replace(/\.[^/.]+$/, "").replace(/\s+/g, '').toLowerCase()}@example.com`,
-        resumeUrl: resumeUrl
-      });
-      
-      setActiveUploads(prev => prev.map(u => 
-        u.id === newUpload.id ? { ...u, progress: 100, status: 'Completed' } : u
-      ));
+      setActiveUploads(prev => prev.map(u => u.id === newUpload.id ? { ...u, progress: 100, status: 'Completed', name: response.data.data.applicant.name } : u));
       dispatch(fetchApplicants());
     } catch (error) {
-      console.error('Upload failed:', error);
+      console.error('AI Import failed:', error);
       setActiveUploads(prev => prev.map(u => 
         u.id === newUpload.id ? { ...u, status: 'Error' } : u
       ));

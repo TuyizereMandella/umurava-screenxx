@@ -174,49 +174,71 @@ export default function CandidateProfilePage() {
           <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
              <div className="flex justify-between items-center mb-6">
                 <h2 className="text-sm font-bold text-gray-500 uppercase tracking-wider">ScreenerX AI Match</h2>
-                <span className="text-3xl font-light text-green-500">{applicant?.match_score || '--'}%</span>
+                {applicant?.ai_analysis && applicant.ai_analysis.length > 0 ? (
+                  <span className={`text-3xl font-light ${(applicant.match_score || 0) >= (applicant.jobs?.shortlist_threshold || 70) ? 'text-green-500' : (applicant.match_score || 0) >= (applicant.jobs?.shortlist_threshold || 70) - 20 ? 'text-amber-500' : 'text-red-500'}`}>
+                    {applicant.match_score ?? '--'}%
+                  </span>
+                ) : (
+                  <span className="text-sm text-gray-400 italic">Not analyzed</span>
+                )}
              </div>
 
              <div className="space-y-6">
-               <div>
-                 <span className="flex items-center text-[10px] font-bold text-green-600 tracking-wider uppercase mb-3">
-                   <CheckCircle2 className="w-4 h-4 mr-1" /> Core Strengths
-                 </span>
-                 <ul className="space-y-3">
-                   {applicant?.ai_analysis?.[0]?.strengths?.length ? (
-                     applicant.ai_analysis[0].strengths.map((strength: string, i: number) => (
-                       <li key={i} className="text-sm text-gray-700 bg-green-50/50 p-2 rounded border border-green-100">
-                         {strength}
-                       </li>
-                     ))
-                   ) : (
-                     <li className="text-xs text-gray-400 italic">No strengths identified yet.</li>
-                   )}
-                 </ul>
-               </div>
+               {applicant?.ai_analysis && applicant.ai_analysis.length > 0 ? (
+                 <>
+                   <div>
+                     <span className="flex items-center text-[10px] font-bold text-green-600 tracking-wider uppercase mb-3">
+                       <CheckCircle2 className="w-4 h-4 mr-1" /> Core Strengths
+                     </span>
+                     <ul className="space-y-3">
+                       {applicant.ai_analysis[0].strengths?.length ? (
+                         applicant.ai_analysis[0].strengths.map((strength: string, i: number) => (
+                           <li key={i} className="text-sm text-gray-700 bg-green-50/50 p-2 rounded border border-green-100">{strength}</li>
+                         ))
+                       ) : (
+                         <li className="text-xs text-gray-400 italic">No strengths identified.</li>
+                       )}
+                     </ul>
+                   </div>
 
-               <div>
-                 <span className="flex items-center text-[10px] font-bold text-amber-600 tracking-wider uppercase mb-3">
-                   <AlertTriangle className="w-4 h-4 mr-1" /> Potential Gaps
-                 </span>
-                 <ul className="space-y-3">
-                   {applicant?.ai_analysis?.[0]?.gaps?.length ? (
-                     applicant.ai_analysis[0].gaps.map((gap: string, i: number) => (
-                       <li key={i} className="text-sm text-gray-700 bg-amber-50/50 p-2 rounded border border-amber-100">
-                         {gap}
-                       </li>
-                     ))
-                   ) : (
-                     <li className="text-xs text-gray-400 italic">No gaps identified yet.</li>
-                   )}
-                 </ul>
-               </div>
+                   <div>
+                     <span className="flex items-center text-[10px] font-bold text-amber-600 tracking-wider uppercase mb-3">
+                       <AlertTriangle className="w-4 h-4 mr-1" /> Potential Gaps
+                     </span>
+                     <ul className="space-y-3">
+                       {applicant.ai_analysis[0].gaps?.length ? (
+                         applicant.ai_analysis[0].gaps.map((gap: string, i: number) => (
+                           <li key={i} className="text-sm text-gray-700 bg-amber-50/50 p-2 rounded border border-amber-100">{gap}</li>
+                         ))
+                       ) : (
+                         <li className="text-xs text-gray-400 italic">No gaps identified.</li>
+                       )}
+                     </ul>
+                   </div>
 
-               <div className="pt-4 border-t border-gray-100">
-                 <p className="text-xs text-indigo-800 italic bg-indigo-50 p-3 rounded-lg border border-indigo-100 leading-relaxed">
-                   "{applicant?.ai_analysis?.[0]?.recommendation_summary || 'Trigger AI Analysis to get a recommendation summary for this candidate.'}"
-                 </p>
-               </div>
+                   <div className="pt-4 border-t border-gray-100">
+                     <p className="text-xs text-indigo-800 italic bg-indigo-50 p-3 rounded-lg border border-indigo-100 leading-relaxed">
+                       &ldquo;{applicant.ai_analysis[0].recommendation_summary || 'No summary available.'}&rdquo;
+                     </p>
+                   </div>
+                 </>
+               ) : (
+                 <div className="py-6 text-center">
+                   <div className="w-14 h-14 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-3">
+                     <Sparkles className="w-7 h-7 text-blue-400" />
+                   </div>
+                   <p className="text-sm font-semibold text-gray-700 mb-1">No AI Analysis Yet</p>
+                   <p className="text-xs text-gray-400 mb-4 leading-relaxed">Click &ldquo;Run AI Analysis&rdquo; above to generate strengths, gaps, and a match score for this candidate.</p>
+                   <button
+                     onClick={handleTriggerAnalysis}
+                     disabled={isAnalyzing}
+                     className="px-4 py-2 bg-blue-600 text-white text-xs font-bold rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center mx-auto"
+                   >
+                     <Sparkles className={`w-3 h-3 mr-1.5 ${isAnalyzing ? 'animate-spin' : ''}`} />
+                     {isAnalyzing ? 'Analyzing...' : 'Run AI Analysis'}
+                   </button>
+                 </div>
+               )}
              </div>
           </div>
 
@@ -283,7 +305,7 @@ export default function CandidateProfilePage() {
                     <span>Experience</span>
                   </div>
                   
-                  {applicant?.ai_analysis && applicant.ai_analysis.length > 0 && applicant.ai_analysis[0].experience?.length > 0 ? ( 
+                  {applicant?.ai_analysis && applicant.ai_analysis.length > 0 && (applicant.ai_analysis[0].experience?.length ?? 0) > 0 ? (
                     <div className="space-y-6 pl-2 border-l-2 border-blue-100 ml-2">
                        {applicant.ai_analysis[0].experience.map((exp: any, idx: number) => (
                          <div key={idx} className="relative pl-6">
@@ -314,7 +336,7 @@ export default function CandidateProfilePage() {
                     <span>Education</span>
                   </div>
                   
-                  {applicant?.ai_analysis && applicant.ai_analysis.length > 0 && applicant.ai_analysis[0].education?.length > 0 ? (
+                  {applicant?.ai_analysis && applicant.ai_analysis.length > 0 && (applicant.ai_analysis[0].education?.length ?? 0) > 0 ? (
                     <div className="space-y-4 pl-2 border-l-2 border-blue-100 ml-2">
                        {applicant.ai_analysis[0].education.map((edu: any, idx: number) => (
                          <div key={idx} className="relative pl-6">

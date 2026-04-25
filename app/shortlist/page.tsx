@@ -5,7 +5,7 @@ import Link from 'next/link';
 import NoData from '@/components/shared/NoData';
 import { useEffect, useState, useMemo } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchShortlistedApplicants, updateApplicantStatus } from '../../store/slices/applicantsSlice';
+import { fetchShortlistedApplicants, updateApplicantStatus, Applicant } from '../../store/slices/applicantsSlice';
 import { fetchDepartments } from '../../store/slices/departmentsSlice';
 import { AppDispatch, RootState } from '../../store/store';
 
@@ -32,9 +32,9 @@ export default function Shortlist() {
   };
 
   const filteredCandidates = useMemo(() => {
-    return applicants.filter(app => {
+    return (applicants as Applicant[]).filter(app => {
       const isShortlisted = app.status === 'SHORTLISTED';
-      const matchesTab = activeTab === 'All' || app.jobs?.department === activeTab;
+      const matchesTab = activeTab === 'All' || (app.jobs as any)?.department === activeTab;
       const matchesSearch = app.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
                            app.jobs?.title?.toLowerCase().includes(searchQuery.toLowerCase());
       return isShortlisted && matchesTab && matchesSearch;
@@ -133,7 +133,7 @@ export default function Shortlist() {
                       </div>
                     </div>
                     <div className="text-right">
-                      <span className="text-5xl font-light text-blue-400">{topCandidate.match_score || 0}%</span>
+                      <span className={`text-5xl font-light ${(topCandidate.match_score || 0) >= (topCandidate.jobs?.shortlist_threshold || 70) + 15 ? 'text-green-400' : 'text-blue-400'}`}>{topCandidate.match_score || 0}%</span>
                       <p className="text-[10px] font-bold text-blue-300 tracking-wider uppercase">Match Score</p>
                     </div>
                   </div>
@@ -199,7 +199,7 @@ export default function Shortlist() {
                         <p className="text-xs text-gray-400 font-medium truncate max-w-[140px]">{candidate.jobs?.title}</p>
                       </div>
                     </div>
-                    <span className="text-2xl font-light text-green-500">{candidate.match_score || 0}%</span>
+                    <span className={`text-2xl font-light ${(candidate.match_score || 0) >= (candidate.jobs?.shortlist_threshold || 70) + 15 ? 'text-green-500' : 'text-blue-500'}`}>{candidate.match_score || 0}%</span>
                   </div>
                   
                   <div className="mb-6 flex-grow bg-gray-50/50 p-3 rounded-xl border border-gray-100/50">

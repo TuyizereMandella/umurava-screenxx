@@ -75,15 +75,20 @@ export default function ApplyPage() {
   const handleSubmit = async () => {
     setIsSubmitting(true);
     try {
-      await publicApi.post('/applicants/ingest', {
-        jobId,
-        name: `${formData.firstName} ${formData.lastName}`,
-        email: formData.email,
-        phone: formData.phone,
-        linkedin_url: formData.linkedin,
-        github_url: formData.github,
-        answers: formData.answers,
-        resumeUrl: uploadedFile ? `https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf` : ''
+      const body = new FormData();
+      body.append('jobId', jobId as string);
+      body.append('name', `${formData.firstName} ${formData.lastName}`);
+      body.append('email', formData.email);
+      body.append('phone', formData.phone);
+      body.append('linkedin_url', formData.linkedin);
+      body.append('github_url', formData.github);
+      body.append('answers', JSON.stringify(formData.answers));
+      if (uploadedFile) {
+        body.append('resume', uploadedFile);
+      }
+
+      await publicApi.post('/applicants/ingest', body, {
+        headers: { 'Content-Type': 'multipart/form-data' }
       });
       setSubmitted(true);
     } catch (err) {
