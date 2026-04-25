@@ -30,6 +30,11 @@ export const createDepartment = createAsyncThunk('departments/createDepartment',
   return response.data.data.department;
 });
 
+export const deleteDepartment = createAsyncThunk('departments/deleteDepartment', async (id: string) => {
+  await api.delete(`/departments/${id}`);
+  return id;
+});
+
 const departmentsSlice = createSlice({
   name: 'departments',
   initialState,
@@ -51,6 +56,9 @@ const departmentsSlice = createSlice({
         state.list.push(action.payload);
         // Sort by name after adding
         state.list.sort((a, b) => a.name.localeCompare(b.name));
+      })
+      .addCase(deleteDepartment.fulfilled, (state, action) => {
+        state.list = state.list.filter((dept) => dept.id !== action.payload);
       });
   },
 });

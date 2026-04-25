@@ -1,5 +1,5 @@
 'use client';
-import { ArrowLeft, Sparkles, CheckCircle2, ChevronDown, X, MessageSquareHeart } from 'lucide-react';
+import { ArrowLeft, Sparkles, CheckCircle2, ChevronDown, X, MessageSquareHeart, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import clsx from 'clsx';
 import { useState } from 'react';
@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import { useDispatch, useSelector } from 'react-redux';
 import { api } from '../../../lib/api';
 import { fetchJobs } from '../../../store/slices/jobsSlice';
-import { fetchDepartments, createDepartment } from '../../../store/slices/departmentsSlice';
+import { fetchDepartments, createDepartment, deleteDepartment } from '../../../store/slices/departmentsSlice';
 import { AppDispatch, RootState } from '../../../store/store';
 import { useEffect } from 'react';
 
@@ -49,11 +49,26 @@ export default function CreateJob() {
       setIsLoading(true);
       const newDept = await dispatch(createDepartment(newDeptName.trim())).unwrap();
       setJobData(prev => ({ ...prev, department: newDept.name }));
-      setIsDeptModalOpen(false);
       setNewDeptName('');
     } catch (error) {
       console.error('Failed to create department:', error);
       alert('Failed to create department. It may already exist.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleDeleteDepartment = async (id: string, name: string) => {
+    if (!confirm(`Are you sure you want to delete the "${name}" department?`)) return;
+    try {
+      setIsLoading(true);
+      await dispatch(deleteDepartment(id)).unwrap();
+      if (jobData.department === name) {
+        setJobData(prev => ({ ...prev, department: departmentsList[0]?.name || '' }));
+      }
+    } catch (error) {
+      console.error('Failed to delete department:', error);
+      alert('Failed to delete department. It may be in use.');
     } finally {
       setIsLoading(false);
     }
@@ -429,43 +444,66 @@ export default function CreateJob() {
         </div>
       </div>
       
-      {/* Department Creation Modal */}
+      {/* Department Management Modal */}
       {isDeptModalOpen && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center">
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl">
             <div className="flex justify-between items-center mb-6">
-              <h3 className="text-xl font-bold text-[#0B1B42]">Add Department</h3>
+              <h3 className="text-xl font-bold text-[#0B1B42]">Manage Departments</h3>
               <button onClick={() => setIsDeptModalOpen(false)} className="text-gray-400 hover:text-gray-600">
                 <X className="w-5 h-5" />
               </button>
             </div>
             
-            <div className="space-y-4">
+            <div className="space-y-6">
               <div>
-                <label className="block text-xs font-bold text-gray-700 tracking-wider mb-2 uppercase">Department Name</label>
-                <input 
-                  type="text" 
-                  value={newDeptName}
-                  onChange={(e) => setNewDeptName(e.target.value)}
-                  placeholder="e.g. Data Science" 
-                  className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none" 
-                  autoFocus
-                />
+                <label className="block text-xs font-bold text-gray-700 tracking-wider mb-2 uppercase">Add New Department</label>
+                <div className="flex space-x-2">
+                  <input 
+                    type="text" 
+                    value={newDeptName}
+                    onChange={(e) => setNewDeptName(e.target.value)}
+                    placeholder="e.g. Data Science" 
+                    className="flex-1 border border-gray-300 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none" 
+                    onKeyDown={(e) => e.key === 'Enter' && handleCreateDepartment()}
+                  />
+                  <button 
+                    onClick={handleCreateDepartment}
+                    disabled={!newDeptName.trim() || isLoading}
+                    className="px-4 py-2 bg-[#0B1B42] text-white rounded-lg text-sm font-bold hover:bg-blue-900 transition-colors disabled:opacity-50"
+                  >
+                    Add
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-gray-700 tracking-wider mb-3 uppercase">Existing Departments</label>
+                <div className="max-h-60 overflow-y-auto space-y-2 pr-2 scrollbar-hide">
+                  {departmentsList.map(dept => (
+                    <div key={dept.id} className="flex justify-between items-center p-3 bg-gray-50 rounded-xl border border-gray-100 group">
+                      <span className="text-sm font-medium text-gray-700">{dept.name}</span>
+                      <button 
+                        onClick={() => handleDeleteDepartment(dept.id, dept.name)}
+                        disabled={isLoading}
+                        className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all opacity-0 group-hover:opacity-100 disabled:opacity-50"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))}
+                  {departmentsList.length === 0 && (
+                    <p className="text-sm text-gray-500 italic">No departments created yet.</p>
+                  )}
+                </div>
               </div>
               
-              <div className="flex justify-end space-x-3 mt-8">
+              <div className="flex justify-end pt-4">
                 <button 
                   onClick={() => setIsDeptModalOpen(false)}
-                  className="px-5 py-2.5 text-sm font-bold text-gray-600 hover:bg-gray-100 rounded-xl transition-colors"
+                  className="px-6 py-2.5 bg-blue-50 text-blue-600 rounded-xl text-sm font-bold hover:bg-blue-100 transition-colors"
                 >
-                  Cancel
-                </button>
-                <button 
-                  onClick={handleCreateDepartment}
-                  disabled={!newDeptName.trim() || isLoading}
-                  className="px-5 py-2.5 text-sm font-bold bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors disabled:opacity-50"
-                >
-                  {isLoading ? 'Saving...' : 'Save Department'}
+                  Close
                 </button>
               </div>
             </div>

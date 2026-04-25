@@ -15,7 +15,7 @@ export interface Applicant {
   status: string;
   match_score: number | null;
   applied_at: string;
-  jobs?: { title: string; organization_id?: string };
+  jobs?: { title: string; organization_id?: string; department?: string };
   ai_analysis?: any[];
 }
 
@@ -41,6 +41,22 @@ export const deleteApplicant = createAsyncThunk('applicants/deleteApplicant', as
   return id;
 });
 
+export const updateApplicantStatus = createAsyncThunk(
+  'applicants/updateApplicantStatus',
+  async ({ id, status }: { id: string; status: string }) => {
+    const response = await api.patch(`/applicants/${id}/status`, { status });
+    return response.data.data.applicant;
+  }
+);
+
+export const fetchShortlistedApplicants = createAsyncThunk(
+  'applicants/fetchShortlistedApplicants',
+  async () => {
+    const response = await api.get('/applicants', { params: { status: 'SHORTLISTED' } });
+    return response.data.data.applicants;
+  }
+);
+
 const applicantsSlice = createSlice({
   name: 'applicants',
   initialState,
@@ -60,6 +76,25 @@ const applicantsSlice = createSlice({
       })
       .addCase(deleteApplicant.fulfilled, (state, action) => {
         state.list = state.list.filter((app) => app.id !== action.payload);
+      })
+      .addCase(updateApplicantStatus.fulfilled, (state, action) => {
+        const index = state.list.findIndex((app) => app.id === action.payload.id);
+        if (index !== -1) {
+          state.list[index] = action.payload;
+        } else {
+          state.list.push(action.payload);
+        }
+      })
+      .addCase(fetchShortlistedApplicants.pending, (state) => {
+        state.status = 'loading';
+      })
+      .addCase(fetchShortlistedApplicants.fulfilled, (state, action) => {
+        state.status = 'succeeded';
+        state.list = action.payload;
+      })
+      .addCase(fetchShortlistedApplicants.rejected, (state, action) => {
+        state.status = 'failed';
+        state.error = action.error.message || 'Failed to fetch shortlisted applicants';
       });
   },
 });
