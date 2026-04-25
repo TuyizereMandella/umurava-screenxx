@@ -302,7 +302,10 @@ function JobCard({ title, dept, score, apps, priority }: any) {
         </div>
         <div className="text-right">
           <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Match Score</p>
-          <p className="text-2xl font-bold text-green-600">{score}%</p>
+          <p className={clsx(
+            "text-2xl font-bold",
+            score !== "--" && score >= 70 ? "text-green-600" : score !== "--" && score >= 50 ? "text-amber-500" : score !== "--" ? "text-red-500" : "text-gray-400"
+          )}>{score}{score !== "--" ? "%" : ""}</p>
         </div>
       </div>
     </div>

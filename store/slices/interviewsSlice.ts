@@ -51,6 +51,15 @@ export const fetchInterviews = createAsyncThunk('interviews/fetchInterviews', as
   }
 });
 
+export const updateInterviewThunk = createAsyncThunk('interviews/updateInterview', async ({ id, data }: { id: string, data: any }, { rejectWithValue }) => {
+  try {
+    const response = await api.patch(`/interviews/${id}`, data);
+    return response.data.data.interview;
+  } catch (error: any) {
+    return rejectWithValue(error.response?.data?.message || 'Failed to update interview');
+  }
+});
+
 const interviewsSlice = createSlice({
   name: 'interviews',
   initialState,
@@ -67,6 +76,12 @@ const interviewsSlice = createSlice({
       .addCase(fetchInterviews.rejected, (state, action) => {
         state.status = 'failed';
         state.error = action.payload as string;
+      })
+      .addCase(updateInterviewThunk.fulfilled, (state, action) => {
+        const index = state.list.findIndex(i => i.id === action.payload.id);
+        if (index !== -1) {
+          state.list[index] = action.payload;
+        }
       });
   },
 });

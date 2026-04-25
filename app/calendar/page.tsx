@@ -3,7 +3,7 @@ import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Clock, MapPin, Use
 import { useState, useEffect, useMemo } from 'react';
 import clsx from 'clsx';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchInterviews, Interview } from '../../store/slices/interviewsSlice';
+import { fetchInterviews, updateInterviewThunk, Interview } from '../../store/slices/interviewsSlice';
 import { fetchApplicants } from '../../store/slices/applicantsSlice';
 import { AppDispatch, RootState } from '../../store/store';
 import NoData from '@/components/shared/NoData';
@@ -40,6 +40,8 @@ export default function CalendarPage() {
   const [scheduleSuccess, setScheduleSuccess] = useState(false);
   const [isLoadingTypes, setIsLoadingTypes] = useState(false);
   const [interviewTypes, setInterviewTypes] = useState<any[]>([]);
+  const [isUpdatingUrl, setIsUpdatingUrl] = useState(false);
+  const [editingUrl, setEditingUrl] = useState('');
 
   // Form states
   const [newType, setNewType] = useState({ name: '', durationMinutes: 30 });
@@ -49,7 +51,7 @@ export default function CalendarPage() {
     scheduledDate: '',
     startTime: '',
     endTime: '',
-    meetUrl: 'https://meet.google.com/abc-defg-hij'
+    meetUrl: ''
   });
 
   useEffect(() => {
@@ -104,12 +106,35 @@ export default function CalendarPage() {
       setTimeout(() => {
         setIsScheduleModalOpen(false);
         setScheduleSuccess(false);
-        setScheduleData({ applicantId: '', interviewTypeId: '', scheduledDate: '', startTime: '', endTime: '', meetUrl: 'https://meet.google.com/abc-defg-hij' });
+        setScheduleData({ applicantId: '', interviewTypeId: '', scheduledDate: '', startTime: '', endTime: '', meetUrl: '' });
       }, 2000);
     } catch (error) {
       alert('Failed to schedule interview');
     }
   };
+
+  const handleUpdateUrl = async () => {
+    if (!selectedInterview) return;
+    setIsUpdatingUrl(true);
+    try {
+      await dispatch(updateInterviewThunk({ 
+        id: selectedInterview.id, 
+        data: { meetUrl: editingUrl } 
+      })).unwrap();
+      setSelectedInterview({ ...selectedInterview, meet_url: editingUrl });
+      alert('Meeting URL updated successfully!');
+    } catch (error) {
+      alert('Failed to update meeting URL');
+    } finally {
+      setIsUpdatingUrl(false);
+    }
+  };
+
+  useEffect(() => {
+    if (selectedInterview) {
+      setEditingUrl(selectedInterview.meet_url || '');
+    }
+  }, [selectedInterview]);
 
   // Calendar Logic
   const calendarDays = useMemo(() => {
@@ -329,6 +354,16 @@ export default function CalendarPage() {
                   <input type="date" value={scheduleData.scheduledDate} onChange={e => setScheduleData({...scheduleData, scheduledDate: e.target.value})} required className="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-sm" />
                   <input type="time" value={scheduleData.startTime} onChange={e => setScheduleData({...scheduleData, startTime: e.target.value})} required className="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-sm" />
                 </div>
+                <div>
+                  <label className="block text-xs font-bold text-gray-700 uppercase mb-2">Meeting URL (Optional)</label>
+                  <input 
+                    type="url" 
+                    placeholder="https://meet.google.com/..." 
+                    value={scheduleData.meetUrl} 
+                    onChange={e => setScheduleData({...scheduleData, meetUrl: e.target.value})} 
+                    className="w-full px-4 py-2.5 rounded-xl border border-gray-300 text-sm" 
+                  />
+                </div>
                 <button type="submit" className="w-full py-3 bg-[#0B1B42] text-white rounded-xl font-bold shadow-lg">Schedule Event</button>
               </form>
             )}
@@ -387,9 +422,45 @@ export default function CalendarPage() {
                     <p className="text-sm font-bold">{formatTime((selectedInterview as any).start_time)}</p>
                   </div>
                </div>
-               <div className="bg-blue-50 p-4 rounded-xl flex items-center space-x-3">
-                  <Video className="w-5 h-5 text-blue-600" />
-                  <a href={selectedInterview.meet_url || '#'} className="text-sm text-blue-600 font-bold hover:underline">Join Meeting</a>
+               
+               <div className="space-y-4">
+                  <div>
+                    <label className="block text-[10px] font-bold text-gray-400 uppercase mb-2">Meeting Details</label>
+                    <div className="flex items-center space-x-2">
+                      <div className="flex-grow relative">
+                        <Video className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                        <input 
+                          type="url" 
+                          placeholder="Add meeting link..." 
+                          value={editingUrl}
+                          onChange={(e) => setEditingUrl(e.target.value)}
+                          className="w-full pl-9 pr-4 py-2.5 bg-gray-50 border border-gray-100 rounded-xl text-sm focus:bg-white focus:ring-2 focus:ring-blue-500 transition-all"
+                        />
+                      </div>
+                      <button 
+                        onClick={handleUpdateUrl}
+                        disabled={isUpdatingUrl || editingUrl === (selectedInterview.meet_url || '')}
+                        className={clsx(
+                          "px-4 py-2.5 rounded-xl text-xs font-bold transition-all",
+                          editingUrl !== (selectedInterview.meet_url || '') 
+                            ? "bg-blue-600 text-white shadow-lg shadow-blue-600/20" 
+                            : "bg-gray-100 text-gray-400 cursor-not-allowed"
+                        )}
+                      >
+                        {isUpdatingUrl ? 'Saving...' : 'Save'}
+                      </button>
+                    </div>
+                  </div>
+
+                  {selectedInterview.meet_url && (
+                    <div className="bg-blue-50 p-4 rounded-xl flex items-center justify-between">
+                       <div className="flex items-center space-x-3">
+                         <Video className="w-5 h-5 text-blue-600" />
+                         <span className="text-sm text-blue-800 font-bold">Meeting Ready</span>
+                       </div>
+                       <a href={selectedInterview.meet_url} target="_blank" rel="noopener noreferrer" className="px-3 py-1 bg-white text-blue-600 rounded-lg text-xs font-bold shadow-sm hover:bg-blue-50 transition-colors">Join Now</a>
+                    </div>
+                  )}
                </div>
             </div>
           </div>

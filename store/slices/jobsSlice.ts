@@ -12,6 +12,7 @@ export interface Job {
   public_code: string;
   public_url: string;
   applicant_count: number;
+  avg_match_score?: number | null;
   created_at: string;
 }
 

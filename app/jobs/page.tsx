@@ -158,7 +158,12 @@ export default function JobsPage() {
                 <div className="flex items-center space-x-6">
                    <div className="text-right hidden sm:block">
                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Match Score</p>
-                     <p className="text-2xl font-bold text-green-600">--%</p>
+                     <p className={clsx(
+                       "text-2xl font-bold",
+                       job.avg_match_score && job.avg_match_score >= 70 ? "text-green-600" : job.avg_match_score && job.avg_match_score >= 50 ? "text-amber-500" : job.avg_match_score ? "text-red-500" : "text-gray-400"
+                     )}>
+                       {job.avg_match_score ? `${job.avg_match_score}%` : '--%'}
+                     </p>
                    </div>
                    <button
                      onClick={() => setShareJob(job)}
