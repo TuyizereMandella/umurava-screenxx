@@ -16,9 +16,9 @@ function ShareModal({ job, onClose }: { job: Job; onClose: () => void }) {
   const dispatch = useDispatch<AppDispatch>();
 
   // Generate dynamic link based on the current environment (localhost or production)
-  const applicationLink = typeof window !== 'undefined' 
-    ? `${window.location.origin}/apply/${job.id}` 
-    : `https://screenerx.vercel.app/apply/${job.id}`;
+  const applicationLink = typeof window !== 'undefined'
+    ? `${window.location.origin}/apply/${job.id}`
+    : `https://screenerx1.vercel.app/apply/${job.id}`;
 
   const toggleAccess = async () => {
     const newIsPublic = !isPublicLink;
@@ -130,7 +130,7 @@ export default function JobsPage() {
         <div className="divide-y divide-gray-50">
           {jobs.length === 0 ? (
             <div className="p-8">
-              <NoData 
+              <NoData
                 icon={Briefcase}
                 title="No active positions"
                 description="You haven't created any job openings yet. Start your recruitment process by creating your first position."
@@ -156,24 +156,24 @@ export default function JobsPage() {
                   </div>
                 </div>
                 <div className="flex items-center space-x-6">
-                   <div className="text-right hidden sm:block">
-                     <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Match Score</p>
-                     <p className={clsx(
-                       "text-2xl font-bold",
-                       job.avg_match_score && job.avg_match_score >= 70 ? "text-green-600" : job.avg_match_score && job.avg_match_score >= 50 ? "text-amber-500" : job.avg_match_score ? "text-red-500" : "text-gray-400"
-                     )}>
-                       {job.avg_match_score ? `${job.avg_match_score}%` : '--%'}
-                     </p>
-                   </div>
-                   <button
-                     onClick={() => setShareJob(job)}
-                     className="p-3 bg-white border border-gray-100 rounded-2xl text-gray-400 hover:text-blue-600 hover:border-blue-200 transition-all shadow-sm"
-                   >
-                     <Share2 className="w-5 h-5" />
-                   </button>
-                   <Link href={`/jobs/${job.id}`} className="p-3 bg-white border border-gray-100 rounded-2xl text-gray-400 hover:text-blue-600 transition-all shadow-sm">
-                     <ChevronRight className="w-6 h-6" />
-                   </Link>
+                  <div className="text-right hidden sm:block">
+                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Match Score</p>
+                    <p className={clsx(
+                      "text-2xl font-bold",
+                      job.avg_match_score && job.avg_match_score >= 70 ? "text-green-600" : job.avg_match_score && job.avg_match_score >= 50 ? "text-amber-500" : job.avg_match_score ? "text-red-500" : "text-gray-400"
+                    )}>
+                      {job.avg_match_score ? `${job.avg_match_score}%` : '--%'}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setShareJob(job)}
+                    className="p-3 bg-white border border-gray-100 rounded-2xl text-gray-400 hover:text-blue-600 hover:border-blue-200 transition-all shadow-sm"
+                  >
+                    <Share2 className="w-5 h-5" />
+                  </button>
+                  <Link href={`/jobs/${job.id}`} className="p-3 bg-white border border-gray-100 rounded-2xl text-gray-400 hover:text-blue-600 transition-all shadow-sm">
+                    <ChevronRight className="w-6 h-6" />
+                  </Link>
                 </div>
               </div>
             ))
