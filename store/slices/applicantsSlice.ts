@@ -36,6 +36,11 @@ export const fetchApplicants = createAsyncThunk('applicants/fetchApplicants', as
   return response.data.data.applicants;
 });
 
+export const deleteApplicant = createAsyncThunk('applicants/deleteApplicant', async (id: string) => {
+  await api.delete(`/applicants/${id}`);
+  return id;
+});
+
 const applicantsSlice = createSlice({
   name: 'applicants',
   initialState,
@@ -52,6 +57,9 @@ const applicantsSlice = createSlice({
       .addCase(fetchApplicants.rejected, (state, action) => {
         state.status = 'failed';
         state.error = action.error.message || 'Failed to fetch applicants';
+      })
+      .addCase(deleteApplicant.fulfilled, (state, action) => {
+        state.list = state.list.filter((app) => app.id !== action.payload);
       });
   },
 });

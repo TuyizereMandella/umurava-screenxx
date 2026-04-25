@@ -1,15 +1,19 @@
 'use client';
-import { useParams } from 'next/navigation';
-import { ArrowLeft, Mail, Phone, MapPin, Download, CheckCircle2, AlertTriangle, Briefcase, GraduationCap, Link as LinkIcon, Calendar, X, Clock, Video } from 'lucide-react';
+import { useRouter, useParams } from 'next/navigation';
+import { ArrowLeft, Mail, Phone, MapPin, Download, CheckCircle2, AlertTriangle, Briefcase, GraduationCap, Link as LinkIcon, Calendar, X, Clock, Video, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
+import { useDispatch } from 'react-redux';
 import clsx from 'clsx';
 import { api } from '@/lib/api';
-import { Applicant } from '@/store/slices/applicantsSlice';
+import { Applicant, deleteApplicant } from '@/store/slices/applicantsSlice';
+import { AppDispatch } from '@/store/store';
 import { Sparkles } from 'lucide-react';
 
 export default function CandidateProfilePage() {
   const params = useParams();
+  const router = useRouter();
+  const dispatch = useDispatch<AppDispatch>();
   const applicantId = params.applicantId as string;
   const [applicant, setApplicant] = useState<Applicant | null>(null);
   const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
@@ -24,15 +28,16 @@ export default function CandidateProfilePage() {
     message: ''
   });
 
+  const fetchApplicant = async () => {
+    try {
+      const response = await api.get(`/applicants/${applicantId}`);
+      setApplicant(response.data.data.applicant);
+    } catch (err) {
+      console.error('Failed to fetch applicant details:', err);
+    }
+  };
+
   useEffect(() => {
-    const fetchApplicant = async () => {
-      try {
-        const response = await api.get(`/applicants/${applicantId}`);
-        setApplicant(response.data.data.applicant);
-      } catch (err) {
-        console.error('Failed to fetch applicant details:', err);
-      }
-    };
     const fetchInterviewTypes = async () => {
       try {
         const response = await api.get('/interviews/types');
@@ -48,20 +53,31 @@ export default function CandidateProfilePage() {
       fetchApplicant();
       fetchInterviewTypes();
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [applicantId]);
 
   const handleTriggerAnalysis = async () => {
     try {
       setIsAnalyzing(true);
       await api.post(`/applicants/${applicantId}/analyze`);
-      const response = await api.get(`/applicants/${applicantId}`);
-      setApplicant(response.data.data.applicant);
-      alert('AI Analysis Complete!');
-    } catch (err) {
-      console.error('AI Analysis failed:', err);
-      alert('AI Analysis failed. Please try again.');
+      await fetchApplicant();
+    } catch (err: any) {
+      console.error(err);
+      alert(err.response?.data?.message || 'Failed to analyze candidate.');
     } finally {
       setIsAnalyzing(false);
+    }
+  };
+
+  const handleDeleteApplicant = async () => {
+    if (!confirm('Are you sure you want to delete this applicant? This action cannot be undone.')) return;
+    
+    try {
+      await dispatch(deleteApplicant(applicantId)).unwrap();
+      router.push('/applicants');
+    } catch (err: any) {
+      console.error('Failed to delete applicant', err);
+      alert('Failed to delete applicant. Please try again.');
     }
   };
 
@@ -114,6 +130,14 @@ export default function CandidateProfilePage() {
           </div>
         </div>
         <div className="flex space-x-3">
+          <button 
+            onClick={handleDeleteApplicant}
+            className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors border border-transparent hover:border-red-100"
+            title="Delete Applicant"
+          >
+            <Trash2 className="w-5 h-5" />
+          </button>
+          <div className="w-px h-8 bg-gray-200 self-center mx-1"></div>
           <button 
             onClick={handleTriggerAnalysis}
             disabled={isAnalyzing || (applicant?.ai_analysis?.length ?? 0) > 0}
