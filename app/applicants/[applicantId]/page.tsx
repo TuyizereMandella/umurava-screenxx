@@ -276,52 +276,64 @@ export default function CandidateProfilePage() {
             </div>
 
             <div className="space-y-8">
-               {/* Experience */}
-               <div>
-                 <div className="flex items-center space-x-2 text-[#0B1B42] font-bold mb-4">
-                   <Briefcase className="w-5 h-5 text-blue-600" />
-                   <span>Experience</span>
-                 </div>
-                 
-                 {applicant?.ai_analysis && applicant.ai_analysis.length > 0 ? ( 
-                   <div className="space-y-6 pl-2 border-l-2 border-blue-100 ml-2">
-                      <div className="relative pl-6">
-                        <div className="absolute w-3 h-3 bg-blue-500 rounded-full -left-[7px] top-1.5 ring-4 ring-white"></div>
-                        <h3 className="font-bold text-[#0B1B42]">Structured Data Pending</h3>
-                        <p className="text-sm text-gray-500 font-medium">Currently using Gemini Flash for generic analysis.</p>
-                        <p className="text-sm text-gray-700 mt-2 leading-relaxed">
-                          Full resume parsing capability will extract structured work experience here.
-                        </p>
-                      </div>
-                   </div>
-                 ) : (
-                   <div className="bg-gray-50 border border-dashed border-gray-200 rounded-xl p-8 text-center ml-2">
-                     <p className="text-sm text-gray-400">Run AI Analysis to extract insights.</p>
-                   </div>
-                 )}
-               </div>
+                {/* Experience */}
+                <div>
+                  <div className="flex items-center space-x-2 text-[#0B1B42] font-bold mb-4">
+                    <Briefcase className="w-5 h-5 text-blue-600" />
+                    <span>Experience</span>
+                  </div>
+                  
+                  {applicant?.ai_analysis && applicant.ai_analysis.length > 0 && applicant.ai_analysis[0].experience?.length > 0 ? ( 
+                    <div className="space-y-6 pl-2 border-l-2 border-blue-100 ml-2">
+                       {applicant.ai_analysis[0].experience.map((exp: any, idx: number) => (
+                         <div key={idx} className="relative pl-6">
+                           <div className="absolute w-3 h-3 bg-blue-500 rounded-full -left-[7px] top-1.5 ring-4 ring-white"></div>
+                           <h3 className="font-bold text-[#0B1B42]">{exp.role}</h3>
+                           <p className="text-sm text-gray-500 font-medium">{exp.company} • {exp.duration}</p>
+                           <p className="text-sm text-gray-700 mt-2 leading-relaxed">
+                             {exp.summary}
+                           </p>
+                         </div>
+                       ))}
+                    </div>
+                  ) : (
+                    <div className="bg-gray-50 border border-dashed border-gray-200 rounded-xl p-8 text-center ml-2">
+                      <p className="text-sm text-gray-400">
+                        {applicant?.ai_analysis && applicant.ai_analysis.length > 0 
+                          ? "No structured experience data found in analysis." 
+                          : "Run AI Analysis to extract insights."}
+                      </p>
+                    </div>
+                  )}
+                </div>
 
-               {/* Education */}
-               <div>
-                 <div className="flex items-center space-x-2 text-[#0B1B42] font-bold mb-4">
-                   <GraduationCap className="w-5 h-5 text-blue-600" />
-                   <span>Education</span>
-                 </div>
-                 
-                 {applicant?.ai_analysis && applicant.ai_analysis.length > 0 ? (
-                   <div className="space-y-4 pl-2 border-l-2 border-blue-100 ml-2">
-                      <div className="relative pl-6">
-                        <div className="absolute w-3 h-3 bg-gray-300 rounded-full -left-[7px] top-1.5 ring-4 ring-white"></div>
-                        <h3 className="font-bold text-[#0B1B42]">Degree Info Pending</h3>
-                        <p className="text-sm text-gray-700 mt-1">Full extraction capability required.</p>
-                      </div>
-                   </div>
-                 ) : (
-                   <div className="bg-gray-50 border border-dashed border-gray-200 rounded-xl p-8 text-center ml-2">
-                     <p className="text-sm text-gray-400">No education data found.</p>
-                   </div>
-                 )}
-               </div>
+                {/* Education */}
+                <div>
+                  <div className="flex items-center space-x-2 text-[#0B1B42] font-bold mb-4">
+                    <GraduationCap className="w-5 h-5 text-blue-600" />
+                    <span>Education</span>
+                  </div>
+                  
+                  {applicant?.ai_analysis && applicant.ai_analysis.length > 0 && applicant.ai_analysis[0].education?.length > 0 ? (
+                    <div className="space-y-4 pl-2 border-l-2 border-blue-100 ml-2">
+                       {applicant.ai_analysis[0].education.map((edu: any, idx: number) => (
+                         <div key={idx} className="relative pl-6">
+                           <div className="absolute w-3 h-3 bg-gray-300 rounded-full -left-[7px] top-1.5 ring-4 ring-white"></div>
+                           <h3 className="font-bold text-[#0B1B42]">{edu.institution}</h3>
+                           <p className="text-sm text-gray-700 mt-1">{edu.degree} {edu.year && `• ${edu.year}`}</p>
+                         </div>
+                       ))}
+                    </div>
+                  ) : (
+                    <div className="bg-gray-50 border border-dashed border-gray-200 rounded-xl p-8 text-center ml-2">
+                      <p className="text-sm text-gray-400">
+                        {applicant?.ai_analysis && applicant.ai_analysis.length > 0 
+                          ? "No structured education data found in analysis." 
+                          : "No education data found."}
+                      </p>
+                    </div>
+                  )}
+                </div>
             </div>
           </div>
         </div>
