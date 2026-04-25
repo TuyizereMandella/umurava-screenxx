@@ -27,9 +27,9 @@ export default function ApplicantsPoolPage() {
           <p className="text-gray-500 mt-2">Manage and evaluate all applicants across your active positions.</p>
         </div>
         <div className="flex space-x-3">
-          <Link href="/applicants/ingest" className="flex items-center px-4 py-2.5 bg-[#0B1B42] text-white rounded-lg text-sm font-medium hover:bg-blue-900 transition-colors shadow-sm">
+          <Link href="/applicants/import" className="flex items-center px-4 py-2.5 bg-[#0B1B42] text-white rounded-lg text-sm font-medium hover:bg-blue-900 transition-colors shadow-sm">
             <UserPlus className="w-4 h-4 mr-2" />
-            Import Candidates
+            AI Batch Import
           </Link>
         </div>
       </div>
