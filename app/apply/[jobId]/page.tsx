@@ -5,7 +5,7 @@ import { Upload, Globe, Code, ChevronRight, Zap, CheckCircle2, ArrowLeft, MapPin
 import Link from 'next/link';
 import clsx from 'clsx';
 import { useParams } from 'next/navigation';
-import { api } from '@/lib/api';
+import { publicApi } from '@/lib/api';
 import { Job } from '@/store/slices/jobsSlice';
 
 const FALLBACK_JOB = {
@@ -49,7 +49,7 @@ export default function ApplyPage() {
   useEffect(() => {
     const fetchJob = async () => {
       try {
-        const response = await api.get(`/jobs/public/${jobId}`);
+        const response = await publicApi.get(`/jobs/public/${jobId}`);
         setJob(response.data.data.job);
       } catch (err) {
         console.error('Failed to fetch job details:', err);
@@ -71,7 +71,7 @@ export default function ApplyPage() {
   const handleSubmit = async () => {
     setIsSubmitting(true);
     try {
-      await api.post('/applicants/ingest', {
+      await publicApi.post('/applicants/ingest', {
         jobId,
         name: `${formData.firstName} ${formData.lastName}`,
         email: formData.email,

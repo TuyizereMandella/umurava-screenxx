@@ -1,7 +1,16 @@
 import axios from 'axios';
 
-// Create a centralized Axios instance .
+// Create a centralized Axios instance for authenticated routes.
 export const api = axios.create({
+  baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+// Separate public instance for unauthenticated routes (candidate portal, etc.)
+// No auth interceptors — safe for candidates who have no token.
+export const publicApi = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1',
   headers: {
     'Content-Type': 'application/json',
