@@ -13,6 +13,11 @@ function ShareModal({ job, onClose }: { job: Job; onClose: () => void }) {
   const [copiedLink, setCopiedLink] = useState(false);
   const [copiedCode, setCopiedCode] = useState(false);
 
+  // Generate dynamic link based on the current environment (localhost or production)
+  const applicationLink = typeof window !== 'undefined' 
+    ? `${window.location.origin}/apply/${job.id}` 
+    : `https://screenerx.vercel.app/apply/${job.id}`;
+
   const copy = (text: string, type: 'link' | 'code') => {
     navigator.clipboard.writeText(text);
     if (type === 'link') { setCopiedLink(true); setTimeout(() => setCopiedLink(false), 2000); }
@@ -61,9 +66,9 @@ function ShareModal({ job, onClose }: { job: Job; onClose: () => void }) {
             <div>
               <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2 block">Application Link</label>
               <div className="flex items-center bg-gray-50 border border-gray-200 rounded-xl overflow-hidden">
-                <p className="flex-1 px-4 py-3 text-sm text-gray-700 truncate font-mono">{job.public_url || 'screenerx.ai/apply/' + job.id}</p>
-                <button onClick={() => copy(job.public_url || '', 'link')} className="px-4 py-3 text-blue-600 hover:bg-blue-50 transition-colors">
-                  {copiedLink ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                <p className="flex-1 px-4 py-3 text-sm text-gray-700 truncate font-mono">{applicationLink}</p>
+                <button onClick={() => copy(applicationLink, 'link')} className="px-4 py-3 text-blue-600 hover:bg-blue-50 transition-colors flex items-center gap-1 font-semibold text-sm">
+                  {copiedLink ? <><Check className="w-4 h-4" /> Copied</> : <><Copy className="w-4 h-4" /> Copy</>}
                 </button>
               </div>
             </div>
