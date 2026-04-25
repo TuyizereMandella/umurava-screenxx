@@ -1,7 +1,7 @@
 'use client';
 import { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Upload, Globe, Code, ChevronRight, Zap, CheckCircle2, ArrowLeft, MapPin, Briefcase, Star, FileText, X, AlertCircle, Clock } from 'lucide-react';
+import { Upload, Globe, Code, ChevronRight, Zap, CheckCircle2, ArrowLeft, MapPin, Briefcase, Star, FileText, X, AlertCircle, Clock, ShieldCheck } from 'lucide-react';
 import Link from 'next/link';
 import clsx from 'clsx';
 import { useParams } from 'next/navigation';
@@ -68,6 +68,10 @@ export default function ApplyPage() {
     answers: { q1: '', q2: '' } as Record<string, string>,
   });
 
+  const [accessCodeInput, setAccessCodeInput] = useState('');
+  const [accessGranted, setAccessGranted] = useState(false);
+  const [accessError, setAccessError] = useState('');
+
   const handleSubmit = async () => {
     setIsSubmitting(true);
     try {
@@ -75,6 +79,10 @@ export default function ApplyPage() {
         jobId,
         name: `${formData.firstName} ${formData.lastName}`,
         email: formData.email,
+        phone: formData.phone,
+        linkedin_url: formData.linkedin,
+        github_url: formData.github,
+        answers: formData.answers,
         resumeUrl: uploadedFile ? `https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf` : ''
       });
       setSubmitted(true);
@@ -152,6 +160,50 @@ export default function ApplyPage() {
           <Link href="/" className="inline-block px-6 py-3 bg-[#111827] text-white text-sm font-medium rounded-xl hover:bg-[#1F2937] transition-colors">
             View other openings
           </Link>
+        </div>
+      </div>
+    );
+  }
+
+  if (job?.requires_access_code && !accessGranted) {
+    return (
+      <div className="min-h-screen bg-[#F5F7FA] flex flex-col items-center justify-center p-6">
+        <div className="bg-white max-w-md w-full rounded-2xl p-8 shadow-sm border border-[#E4E8EF] text-center">
+          <div className="w-16 h-16 bg-blue-50 rounded-full mx-auto flex items-center justify-center mb-6 border border-blue-100">
+            <ShieldCheck className="w-8 h-8 text-blue-600" />
+          </div>
+          <h1 className="text-2xl font-bold text-[#111827] mb-2">Private Job Listing</h1>
+          <p className="text-[#6B7280] mb-6 text-sm">
+            This opening at <strong className="text-[#111827]">{job?.organizations?.name || FALLBACK_JOB.company}</strong> requires an access code to view and apply.
+          </p>
+          
+          <div className="space-y-4">
+            <div>
+              <input 
+                type="text" 
+                placeholder="Enter access code (e.g., SX-1234)" 
+                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-center font-mono font-bold tracking-widest text-[#0B1B42] focus:outline-none focus:ring-2 focus:ring-blue-500 uppercase"
+                value={accessCodeInput}
+                onChange={e => {
+                  setAccessCodeInput(e.target.value.toUpperCase());
+                  setAccessError('');
+                }}
+              />
+              {accessError && <p className="text-red-500 text-xs font-bold mt-2">{accessError}</p>}
+            </div>
+            <button 
+              onClick={() => {
+                if (accessCodeInput === job.public_code) {
+                  setAccessGranted(true);
+                } else {
+                  setAccessError('Invalid access code. Please try again.');
+                }
+              }}
+              className="w-full py-3 bg-[#111827] text-white text-sm font-bold rounded-xl hover:bg-[#1F2937] transition-colors"
+            >
+              Unlock Application
+            </button>
+          </div>
         </div>
       </div>
     );

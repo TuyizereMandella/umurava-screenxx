@@ -7,16 +7,31 @@ import { useDispatch, useSelector } from 'react-redux';
 import { fetchJobs, Job } from '../../store/slices/jobsSlice';
 import { AppDispatch, RootState } from '../../store/store';
 import NoData from '@/components/shared/NoData';
+import { api } from '@/lib/api';
 
 function ShareModal({ job, onClose }: { job: Job; onClose: () => void }) {
-  const [isPublic, setIsPublic] = useState(true);
+  const [isPublicLink, setIsPublicLink] = useState(!job.requires_access_code);
   const [copiedLink, setCopiedLink] = useState(false);
   const [copiedCode, setCopiedCode] = useState(false);
+  const dispatch = useDispatch<AppDispatch>();
 
   // Generate dynamic link based on the current environment (localhost or production)
   const applicationLink = typeof window !== 'undefined' 
     ? `${window.location.origin}/apply/${job.id}` 
     : `https://screenerx.vercel.app/apply/${job.id}`;
+
+  const toggleAccess = async () => {
+    const newIsPublic = !isPublicLink;
+    setIsPublicLink(newIsPublic);
+    try {
+      await api.patch(`/jobs/${job.id}`, { requires_access_code: !newIsPublic });
+      dispatch(fetchJobs()); // Refresh the jobs list to get the updated status
+    } catch (err) {
+      console.error('Failed to update job access:', err);
+      // Revert on failure
+      setIsPublicLink(!newIsPublic);
+    }
+  };
 
   const copy = (text: string, type: 'link' | 'code') => {
     navigator.clipboard.writeText(text);
@@ -40,24 +55,24 @@ function ShareModal({ job, onClose }: { job: Job; onClose: () => void }) {
         <div className="p-8 space-y-6">
           <div className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl border border-gray-100">
             <div className="flex items-center space-x-3">
-              <div className={clsx("w-10 h-10 rounded-xl flex items-center justify-center transition-colors", isPublic ? "bg-green-100" : "bg-gray-200")}>
-                {isPublic ? <Globe className="w-5 h-5 text-green-600" /> : <EyeOff className="w-5 h-5 text-gray-500" />}
+              <div className={clsx("w-10 h-10 rounded-xl flex items-center justify-center transition-colors", isPublicLink ? "bg-green-100" : "bg-gray-200")}>
+                {isPublicLink ? <Globe className="w-5 h-5 text-green-600" /> : <Lock className="w-5 h-5 text-gray-500" />}
               </div>
               <div>
-                <p className="text-sm font-bold text-gray-800">{isPublic ? 'Public Listing' : 'Private Access'}</p>
-                <p className="text-[10px] text-gray-500 mt-0.5">{isPublic ? 'Visible to everyone' : 'Access code required'}</p>
+                <p className="text-sm font-bold text-gray-800">{isPublicLink ? 'Public Listing' : 'Private Access'}</p>
+                <p className="text-[10px] text-gray-500 mt-0.5">{isPublicLink ? 'Visible to everyone' : 'Access code required'}</p>
               </div>
             </div>
             <button
-              onClick={() => setIsPublic(!isPublic)}
+              onClick={toggleAccess}
               className={clsx(
                 "relative w-12 h-6 rounded-full transition-colors duration-300",
-                isPublic ? "bg-green-500" : "bg-gray-300"
+                isPublicLink ? "bg-green-500" : "bg-gray-300"
               )}
             >
               <div className={clsx(
                 "absolute top-1 w-4 h-4 bg-white rounded-full shadow-sm transition-all duration-300",
-                isPublic ? "left-7" : "left-1"
+                isPublicLink ? "left-7" : "left-1"
               )}></div>
             </button>
           </div>

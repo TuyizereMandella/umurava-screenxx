@@ -8,6 +8,7 @@ export interface Job {
   location: string;
   priority: string;
   is_public: boolean;
+  requires_access_code: boolean;
   public_code: string;
   public_url: string;
   applicant_count: number;

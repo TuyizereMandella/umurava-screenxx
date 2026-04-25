@@ -8,8 +8,10 @@ export interface Applicant {
   email: string;
   phone?: string;
   linkedin_url?: string;
+  github_url?: string;
   location?: string;
   resume_url?: string;
+  answers?: Record<string, string>;
   status: string;
   match_score: number | null;
   applied_at: string;

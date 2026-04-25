@@ -116,13 +116,13 @@ export default function CandidateProfilePage() {
         <div className="flex space-x-3">
           <button 
             onClick={handleTriggerAnalysis}
-            disabled={isAnalyzing || applicant?.ai_analysis?.length > 0}
+            disabled={isAnalyzing || (applicant?.ai_analysis?.length ?? 0) > 0}
             className={clsx(
               "px-4 py-2 text-white rounded-lg text-sm font-medium transition-colors shadow-sm flex items-center disabled:opacity-50",
-              applicant?.ai_analysis?.length > 0 ? "bg-green-600 hover:bg-green-700 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700"
+              (applicant?.ai_analysis?.length ?? 0) > 0 ? "bg-green-600 hover:bg-green-700 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700"
             )}
           >
-            {applicant?.ai_analysis?.length > 0 ? (
+            {(applicant?.ai_analysis?.length ?? 0) > 0 ? (
               <>
                 <CheckCircle2 className="w-4 h-4 mr-2" />
                 Analysis Completed
@@ -218,6 +218,21 @@ export default function CandidateProfilePage() {
                 )}
              </div>
           </div>
+
+          {/* Screening Answers */}
+          {applicant?.answers && Object.keys(applicant.answers).length > 0 && (
+            <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
+              <h2 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-4">Screening Answers</h2>
+              <div className="space-y-4">
+                {Object.entries(applicant.answers).map(([key, value]) => (
+                  <div key={key} className="border-l-2 border-blue-200 pl-3">
+                    <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Question {key.replace('q','')}</p>
+                    <p className="text-sm text-gray-700 leading-relaxed">{value as string}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Right Column: Parsed Resume */}
