@@ -75,7 +75,7 @@ export default function ApplyPage() {
         jobId,
         name: `${formData.firstName} ${formData.lastName}`,
         email: formData.email,
-        resumeUrl: uploadedFile ? `https://mock-storage.com/${uploadedFile.name}` : ''
+        resumeUrl: uploadedFile ? `https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf` : ''
       });
       setSubmitted(true);
     } catch (err) {

@@ -11,6 +11,7 @@ export default function JobSettingsPage() {
   const jobId = params.jobId as string;
   const [job, setJob] = useState<any>(null);
   const [isPublic, setIsPublic] = useState(true);
+  const [autoAiAnalysis, setAutoAiAnalysis] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   
   useEffect(() => {
@@ -19,6 +20,7 @@ export default function JobSettingsPage() {
         const response = await api.get(`/jobs/${jobId}`);
         setJob(response.data.data.job);
         setIsPublic(response.data.data.job.is_public);
+        setAutoAiAnalysis(response.data.data.job.auto_ai_analysis ?? true);
       } catch (err) {
         console.error('Failed to fetch job settings:', err);
       }
@@ -29,7 +31,7 @@ export default function JobSettingsPage() {
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      await api.patch(`/jobs/${jobId}`, { is_public: isPublic });
+      await api.patch(`/jobs/${jobId}`, { is_public: isPublic, auto_ai_analysis: autoAiAnalysis });
       router.push(`/jobs/${jobId}`);
     } catch (err) {
       console.error('Failed to save settings:', err);
@@ -91,10 +93,26 @@ export default function JobSettingsPage() {
         <div className="bg-white border border-gray-200 rounded-xl p-8 shadow-sm">
           <div className="flex items-center space-x-2 text-[#0B1B42] font-bold text-lg mb-6 border-b border-gray-100 pb-4">
             <Sliders className="w-5 h-5" />
-            <h2>Custom AI Rules (Overrides Global Settings)</h2>
+            <h2>AI Screening & Rules</h2>
           </div>
           
-          <div className="space-y-6">
+          <div className="space-y-8">
+             <div className="flex items-start justify-between">
+               <div>
+                 <h3 className="text-sm font-bold text-gray-800">Auto-run AI Analysis</h3>
+                 <p className="text-xs text-gray-500 mt-1">If enabled, ScreenerX will automatically analyze candidates as soon as they apply.</p>
+               </div>
+               <label className="inline-flex items-center cursor-pointer">
+                 <input 
+                   type="checkbox" 
+                   className="sr-only peer" 
+                   checked={autoAiAnalysis} 
+                   onChange={(e) => setAutoAiAnalysis(e.target.checked)} 
+                 />
+                 <div className="relative w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#0B1B42]"></div>
+               </label>
+             </div>
+
              <div>
                 <label className="block text-sm font-bold text-gray-800 mb-1">Job-Specific Match Threshold</label>
                 <p className="text-xs text-gray-500 mb-3">Only for this job: Candidates below this score will not be shortlisted.</p>

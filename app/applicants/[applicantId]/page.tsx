@@ -116,11 +116,23 @@ export default function CandidateProfilePage() {
         <div className="flex space-x-3">
           <button 
             onClick={handleTriggerAnalysis}
-            disabled={isAnalyzing}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors shadow-sm flex items-center disabled:opacity-50"
+            disabled={isAnalyzing || applicant?.ai_analysis?.length > 0}
+            className={clsx(
+              "px-4 py-2 text-white rounded-lg text-sm font-medium transition-colors shadow-sm flex items-center disabled:opacity-50",
+              applicant?.ai_analysis?.length > 0 ? "bg-green-600 hover:bg-green-700 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700"
+            )}
           >
-            <Sparkles className={clsx("w-4 h-4 mr-2", isAnalyzing && "animate-spin")} />
-            {isAnalyzing ? 'Analyzing...' : 'Run AI Analysis'}
+            {applicant?.ai_analysis?.length > 0 ? (
+              <>
+                <CheckCircle2 className="w-4 h-4 mr-2" />
+                Analysis Completed
+              </>
+            ) : (
+              <>
+                <Sparkles className={clsx("w-4 h-4 mr-2", isAnalyzing && "animate-spin")} />
+                {isAnalyzing ? 'Analyzing...' : 'Run AI Analysis'}
+              </>
+            )}
           </button>
           <button 
             onClick={() => setIsScheduleModalOpen(true)}
