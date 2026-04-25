@@ -1,7 +1,7 @@
 'use client';
 import { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Upload, Globe, Code, ChevronRight, Zap, CheckCircle2, ArrowLeft, MapPin, Briefcase, Star, FileText, X, AlertCircle } from 'lucide-react';
+import { Upload, Globe, Code, ChevronRight, Zap, CheckCircle2, ArrowLeft, MapPin, Briefcase, Star, FileText, X, AlertCircle, Clock } from 'lucide-react';
 import Link from 'next/link';
 import clsx from 'clsx';
 import { useParams } from 'next/navigation';
@@ -129,6 +129,30 @@ export default function ApplyPage() {
           </div>
           <p className="text-[#9CA3AF] text-xs">Confirmation sent to <span className="text-[#2563EB]">{formData.email || 'your email'}</span></p>
         </motion.div>
+      </div>
+    );
+  }
+
+  const isPastDeadline = job?.deadline && new Date(job.deadline).getTime() < new Date().getTime();
+  const isClosedManually = job?.is_public === false;
+  const isExpired = isPastDeadline || isClosedManually;
+
+  if (isExpired) {
+    return (
+      <div className="min-h-screen bg-[#F5F7FA] flex flex-col items-center justify-center p-6">
+        <div className="bg-white max-w-md w-full rounded-2xl p-8 shadow-sm border border-[#E4E8EF] text-center">
+          <div className="w-16 h-16 bg-gray-100 rounded-full mx-auto flex items-center justify-center mb-6">
+            <Clock className="w-8 h-8 text-gray-400" />
+          </div>
+          <h1 className="text-2xl font-bold text-[#111827] mb-2">Applications Closed</h1>
+          <p className="text-[#6B7280] mb-8 leading-relaxed">
+            We are no longer accepting applications for the <strong className="text-[#111827]">{job?.title}</strong> position at <strong className="text-[#111827]">{job?.organizations?.name || FALLBACK_JOB.company}</strong>. 
+            {isClosedManually ? ' The hiring team has paused new applications.' : ' The deadline has passed.'}
+          </p>
+          <Link href="/" className="inline-block px-6 py-3 bg-[#111827] text-white text-sm font-medium rounded-xl hover:bg-[#1F2937] transition-colors">
+            View other openings
+          </Link>
+        </div>
       </div>
     );
   }

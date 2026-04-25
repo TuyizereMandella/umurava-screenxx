@@ -23,7 +23,8 @@ export default function EditJobPage() {
     department: '',
     location: '',
     description: '',
-    priority: 'REGULAR'
+    priority: 'REGULAR',
+    deadline: ''
   });
   const [isDeptModalOpen, setIsDeptModalOpen] = useState(false);
   const [newDeptName, setNewDeptName] = useState('');
@@ -42,10 +43,11 @@ export default function EditJobPage() {
         const job = response.data.data.job;
         setJobData({
           title: job.title,
-          department: job.department,
-          location: job.location,
+          department: job.department || '',
+          location: job.location || 'Remote',
           description: job.description || '',
-          priority: job.priority
+          priority: job.priority || 'REGULAR',
+          deadline: job.deadline ? new Date(job.deadline).toISOString().split('T')[0] : ''
         });
         setAiBaseline(job.ai_baseline);
       } catch (error) {
@@ -160,6 +162,32 @@ export default function EditJobPage() {
                          + New
                        </button>
                      </div>
+                   </div>
+
+                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6 mt-6">
+                      <div>
+                        <label className="block text-xs font-bold text-gray-700 tracking-wider mb-2 uppercase">Priority</label>
+                        <div className="relative">
+                          <select 
+                            value={jobData.priority}
+                            onChange={(e) => setJobData({...jobData, priority: e.target.value as 'REGULAR' | 'HIGH'})}
+                            className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm appearance-none focus:ring-2 focus:ring-blue-500 outline-none bg-white"
+                          >
+                            <option value="REGULAR">Regular</option>
+                            <option value="HIGH">High Priority</option>
+                          </select>
+                          <ChevronDown className="w-4 h-4 text-gray-400 absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none" />
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-gray-700 tracking-wider mb-2 uppercase">Application Deadline (Optional)</label>
+                        <input 
+                          type="date" 
+                          value={jobData.deadline}
+                          onChange={(e) => setJobData({...jobData, deadline: e.target.value})}
+                          className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white"
+                        />
+                      </div>
                    </div>
                  </div>
                  

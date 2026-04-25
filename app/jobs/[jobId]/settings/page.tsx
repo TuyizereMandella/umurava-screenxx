@@ -1,11 +1,43 @@
 'use client';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { ArrowLeft, Save, ShieldAlert, Sliders, Users, Power } from 'lucide-react';
 import Link from 'next/link';
+import { useState, useEffect } from 'react';
+import { api } from '@/lib/api';
 
 export default function JobSettingsPage() {
   const params = useParams();
+  const router = useRouter();
   const jobId = params.jobId as string;
+  const [job, setJob] = useState<any>(null);
+  const [isPublic, setIsPublic] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  
+  useEffect(() => {
+    const fetchJob = async () => {
+      try {
+        const response = await api.get(`/jobs/${jobId}`);
+        setJob(response.data.data.job);
+        setIsPublic(response.data.data.job.is_public);
+      } catch (err) {
+        console.error('Failed to fetch job settings:', err);
+      }
+    };
+    fetchJob();
+  }, [jobId]);
+
+  const handleSave = async () => {
+    setIsSaving(true);
+    try {
+      await api.patch(`/jobs/${jobId}`, { is_public: isPublic });
+      router.push(`/jobs/${jobId}`);
+    } catch (err) {
+      console.error('Failed to save settings:', err);
+      alert('Failed to save settings');
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   return (
     <div className="bg-gray-50 min-h-screen pb-12">
@@ -19,9 +51,13 @@ export default function JobSettingsPage() {
             <p className="text-xs text-gray-500 mt-0.5">Manage pipeline rules and team access for this role.</p>
           </div>
         </div>
-        <button className="flex items-center px-6 py-2.5 bg-[#0B1B42] text-white rounded-lg text-sm font-medium hover:bg-blue-900 transition-colors shadow-sm">
+        <button 
+          onClick={handleSave}
+          disabled={isSaving}
+          className="flex items-center px-6 py-2.5 bg-[#0B1B42] text-white rounded-lg text-sm font-medium hover:bg-blue-900 transition-colors shadow-sm disabled:opacity-70"
+        >
           <Save className="w-4 h-4 mr-2" />
-          Save Changes
+          {isSaving ? 'Saving...' : 'Save Changes'}
         </button>
       </div>
 
@@ -40,7 +76,12 @@ export default function JobSettingsPage() {
               <p className="text-xs text-gray-500 mt-1">If disabled, the public job board link will be closed and candidates cannot apply.</p>
             </div>
             <label className="inline-flex items-center cursor-pointer">
-              <input type="checkbox" className="sr-only peer" defaultChecked />
+              <input 
+                type="checkbox" 
+                className="sr-only peer" 
+                checked={isPublic} 
+                onChange={(e) => setIsPublic(e.target.checked)} 
+              />
               <div className="relative w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#0B1B42]"></div>
             </label>
           </div>
